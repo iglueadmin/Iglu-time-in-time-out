@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Time Tracker</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #e0f7ff, #b3e5fc);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #003f5c;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 320px;
+      width: 90%;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      border: 2px solid #81d4fa;
+      border-radius: 10px;
+      width: 100%;
+      margin-bottom: 20px;
+      font-size: 16px;
+      color: #003f5c;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #4fc3f7;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0288d1;
+    }
+
+    .clock {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #0277bd;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Employee Time Tracker</h2>
+    <div class="clock" id="clock">--:--:--</div>
+    <input type="text" id="name" placeholder="Enter your name" />
+    <br />
+    <button onclick="submitTime()">Submit</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function submitTime() {
+      const name = document.getElementById("name").value.trim();
+      const status = document.getElementById("status");
+
+      if (!name) {
+        status.textContent = "⚠️ Please enter your name.";
+        status.style.color = "red";
+        return;
+      }
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbzN6bjAEEt8XE289qbJXlS8tFBH9ZKJCmUP_Xa4y2qzfX36gjRZ6EzLo7d1SMbTWeci/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+
+        const text = await response.text();
+        status.textContent = text;
+        status.style.color = text.includes("✅") ? "green" : (text.includes("⚠️") ? "orange" : "red");
+        document.getElementById("name").value = "";
+      } catch (error) {
+        console.error(error);
+        status.textContent = "❌ Submission failed. See console.";
+        status.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>
