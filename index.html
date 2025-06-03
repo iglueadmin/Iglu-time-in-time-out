@@ -2,112 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Employee Time Tracker</title>
+  <title>Iglu Time Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(to right, #e0f7ff, #b3e5fc);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #003f5c;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #8e9eab, #eef2f3);
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
-      margin: 0;
     }
 
     .container {
-      background: white;
-      padding: 40px;
+      background-color: white;
+      padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       text-align: center;
-      max-width: 320px;
-      width: 90%;
+      max-width: 400px;
+      width: 100%;
     }
 
-    input[type="text"] {
-      padding: 10px;
-      border: 2px solid #81d4fa;
-      border-radius: 10px;
+    input {
+      padding: 12px;
+      font-size: 16px;
       width: 100%;
       margin-bottom: 20px;
-      font-size: 16px;
-      color: #003f5c;
+      border: 1px solid #ccc;
+      border-radius: 10px;
     }
 
     button {
-      padding: 10px 20px;
-      background: #4fc3f7;
-      color: white;
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 5px;
       border: none;
       border-radius: 10px;
+      background-color: #4CAF50;
+      color: white;
       cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s;
     }
 
     button:hover {
-      background: #0288d1;
+      background-color: #45a049;
     }
 
-    .clock {
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #0277bd;
-    }
-
-    .status {
+    .timestamp {
       margin-top: 10px;
-      font-weight: bold;
+      font-size: 14px;
+      color: gray;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Employee Time Tracker</h2>
-    <div class="clock" id="clock">--:--:--</div>
-    <input type="text" id="name" placeholder="Enter your name" />
-    <br />
-    <button onclick="submitTime()">Submit</button>
-    <div class="status" id="status"></div>
+    <h2>Iglu Time Tracker</h2>
+    <input type="text" id="nameInput" placeholder="Enter your name" />
+    <button onclick="logTime('Time In')">Time In</button>
+    <button onclick="logTime('Time Out')">Time Out</button>
+    <div class="timestamp" id="statusMessage"></div>
   </div>
 
   <script>
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("clock").textContent = now.toLocaleTimeString();
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbzk3sO1ez9RrdnDGzbKZxPE4hQ2CoVIcGViR8UrJ83oTRBIhJqnI2Zi3kJuZe9OYqjfsQ/exec';
+
+  function logTime(type) {
+    const name = document.getElementById('nameInput').value.trim();
+    const status = document.getElementById('statusMessage');
+
+    if (!name) {
+      status.textContent = "Please enter your name.";
+      return;
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    async function submitTime() {
-      const name = document.getElementById("name").value.trim();
-      const status = document.getElementById("status");
+    const data = {
+      name: name,
+      type: type
+    };
 
-      if (!name) {
-        status.textContent = "⚠️ Please enter your name.";
-        status.style.color = "red";
-        return;
-      }
-
-      try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbzN6bjAEEt8XE289qbJXlS8tFBH9ZKJCmUP_Xa4y2qzfX36gjRZ6EzLo7d1SMbTWeci/exec", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name })
-        });
-
-        const text = await response.text();
-        status.textContent = text;
-        status.style.color = text.includes("✅") ? "green" : (text.includes("⚠️") ? "orange" : "red");
-        document.getElementById("name").value = "";
-      } catch (error) {
-        console.error(error);
-        status.textContent = "❌ Submission failed. See console.";
-        status.style.color = "red";
-      }
-    }
-  </script>
+    fetch(scriptURL, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => {
+      status.textContent = `${type} recorded at ${new Date().toLocaleTimeString()}`;
+      document.getElementById('nameInput').value = '';
+    })
+    .catch(error => {
+      console.error('Error!', error.message);
+      status.textContent = "There was an error submitting your time.";
+    });
+  }
+</script>
 </body>
 </html>
